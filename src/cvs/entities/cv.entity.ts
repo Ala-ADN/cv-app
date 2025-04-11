@@ -24,9 +24,9 @@ export class Cv {
   job: string;
   @Column()
   path: string;
-  @ManyToMany(() => Cv, (cv) => cv.skills, { cascade: true })
+  @ManyToMany(() => Skill, { cascade: true })
   @JoinTable()
   skills: Skill[];
-  @ManyToOne(() => User, (user) => user.cvs, { cascade: true })
+  @ManyToOne(() => User, (user) => user.cvs)
   user: User;
 }
