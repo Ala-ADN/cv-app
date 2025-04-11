@@ -1,26 +1,48 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
+import { Skill } from './entities/skill.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SkillsService {
+  constructor(
+    @InjectRepository(Skill)
+    private skillRepository: Repository<Skill>,
+  ) {}
+
   create(createSkillDto: CreateSkillDto) {
-    return 'This action adds a new skill';
+    const skill = new Skill();
+    skill.designation = createSkillDto.designation;
+    skill.id = Math.floor(Math.random() * 10000);
+    return skill;
   }
 
-  findAll() {
-    return `This action returns all skills`;
+  async findAll(): Promise<Skill[]> {
+    return await this.skillRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} skill`;
+  async findOne(id: number): Promise<Skill> {
+    const skill = await this.skillRepository.findOneBy({ id });
+    if (!skill) {
+      throw new Error(`Skill with ID ${id} not found`);
+    }
+    return skill;
   }
 
-  update(id: number, updateSkillDto: UpdateSkillDto) {
-    return `This action updates a #${id} skill`;
+  async update(id: number, updateSkillDto: UpdateSkillDto): Promise<Skill> {
+    const result = await this.skillRepository.update(id, updateSkillDto);
+    if (result.affected === 0) {
+      throw new Error(`Skill with ID ${id} not found`);
+    }
+    return await this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} skill`;
+  async remove(id: number): Promise<void> {
+    const result = await this.skillRepository.delete(id);
+    if (result.affected === 0) {
+      throw new Error(`Skill with ID ${id} not found`);
+    }
   }
 }
