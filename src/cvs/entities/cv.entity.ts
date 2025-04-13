@@ -27,6 +27,6 @@ export class Cv {
   @ManyToMany(() => Skill, { cascade: true })
   @JoinTable()
   skills: Skill[];
-  @ManyToOne(() => User, (user) => user.cvs)
-  user: User;
+  @ManyToOne(() => User, (user) => user.cvs, { nullable: true })
+  user: User | null;
 }
