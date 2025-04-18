@@ -41,10 +41,7 @@ export class AuthService {
         user.password,
       );
       if (!validated_user) {
-        return {
-          status: 'error',
-          message: 'Invalid credentials',
-        };
+        throw new UnauthorizedException('Invalid credentials');
       }
       const payload = { username: validated_user.username, id: validated_user.id, role : validated_user.role};
     return {
