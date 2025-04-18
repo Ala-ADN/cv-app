@@ -24,6 +24,7 @@ describe('CvsController', () => {
     email: 'john@example.com',
     password: 'password123',
     cvs: [],
+    role: 'user',
   };
 
   beforeEach(async () => {
@@ -91,9 +92,9 @@ describe('CvsController', () => {
 
       jest.spyOn(service, 'create').mockResolvedValue(expectedResult);
 
-      const result = await controller.create(createCvDto);
+      const result = await controller.create(createCvDto, mockUser);
 
-      expect(service.create).toHaveBeenCalledWith(createCvDto);
+      expect(service.create).toHaveBeenCalledWith(createCvDto, mockUser);
       expect(result).toEqual(expectedResult);
     });
   });
@@ -116,7 +117,7 @@ describe('CvsController', () => {
 
       jest.spyOn(service, 'findAll').mockResolvedValue(cvs);
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(mockUser);
 
       expect(service.findAll).toHaveBeenCalled();
       expect(result).toEqual(cvs);
@@ -139,9 +140,12 @@ describe('CvsController', () => {
 
       jest.spyOn(service, 'findAll').mockResolvedValue(cvs);
 
-      const result = await controller.findAll('true', 'true');
+      const result = await controller.findAll(mockUser, 'true', 'true');
 
-      expect(service.findAll).toHaveBeenCalledWith(['skills', 'user']);
+      expect(service.findAll).toHaveBeenCalledWith(mockUser, [
+        'skills',
+        'user',
+      ]);
       expect(result).toEqual(cvs);
     });
   });
