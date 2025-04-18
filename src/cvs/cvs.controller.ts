@@ -16,14 +16,15 @@ import { diskStorage } from 'multer';
 import { CvsService } from './cvs.service';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('cvs')
 export class CvsController {
   constructor(private readonly cvsService: CvsService) {}
 
   @Post()
-  create(@Body() createCvDto: CreateCvDto) {
-    return this.cvsService.create(createCvDto);
+  create(@Body() createCvDto: CreateCvDto, @User() user) {
+    return this.cvsService.create(createCvDto, user);
   }
 
   @Post('upload')
@@ -40,13 +41,18 @@ export class CvsController {
       }),
     }),
   )
-  uploadCvFile(@UploadedFile() file, @Body() createCvDto: CreateCvDto) {
+  uploadCvFile(
+    @UploadedFile() file,
+    @Body() createCvDto: CreateCvDto,
+    @User() user,
+  ) {
     const modifiedDto = { ...createCvDto, path: file.path };
-    return this.cvsService.create(modifiedDto);
+    return this.cvsService.create(modifiedDto, user);
   }
 
   @Get()
   findAll(
+    @User() user: any,
     @Query('withSkills') withSkills?: string,
     @Query('withUser') withUser?: string,
   ) {
@@ -54,7 +60,10 @@ export class CvsController {
     if (withSkills === 'true') relations.push('skills');
     if (withUser === 'true') relations.push('user');
 
-    return this.cvsService.findAll(relations.length ? relations : undefined);
+    return this.cvsService.findAll(
+      user,
+      relations.length ? relations : undefined,
+    );
   }
 
   @Get('user/:userId')

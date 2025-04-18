@@ -15,30 +15,35 @@ export class CvsService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
-  async create(data: CreateCvDto) {
-    const { skills: skillIds, userId, ...cvData } = data;
+  async create(data: CreateCvDto, user: any) {
+    const { skills: skillIds, ...cvData } = data;
     const cv = this.cvRepository.create(cvData);
+
+    const userEntity = await this.userRepository.findOneBy({ id: user.id });
+    if (!userEntity) {
+      throw new NotFoundException(`User with ID ${user.id} not found`);
+    }
+    cv.user = userEntity;
 
     if (skillIds) {
       const skills = await this.skillRepository.findBy({ id: In(skillIds) });
       cv.skills = skills;
     }
 
-    if (userId) {
-      const user = await this.userRepository.findOneBy({ id: userId });
-      if (!user) {
-        throw new NotFoundException(`User with ID ${userId} not found`);
-      }
-      cv.user = user;
-    }
-
     return this.cvRepository.save(cv);
   }
 
-  findAll(relations?: string[]) {
-    return this.cvRepository.find({
-      relations: relations || ['skills', 'user'],
-    });
+  async findAll(user: any, relations?: string[]) {
+    const defaultRelations = relations || ['skills', 'user'];
+
+    if (user.isAdmin) {
+      return this.cvRepository.find({ relations: defaultRelations });
+    } else {
+      return this.cvRepository.find({
+        where: { user: { id: user.id } },
+        relations: defaultRelations,
+      });
+    }
   }
 
   findOne(id: number, relations?: string[]) {

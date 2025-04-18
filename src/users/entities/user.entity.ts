@@ -11,6 +11,10 @@ export class User {
   email: string;
   @Column()
   password: string;
+
+  @Column({ default: false })
+  isAdmin: boolean;
+
   @OneToMany(() => Cv, (cv) => cv.user, { cascade: true })
   cvs: Cv[];
 }
