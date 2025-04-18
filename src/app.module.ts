@@ -6,6 +6,7 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { JwtAuthMiddleware } from './middleware/jwt-auth.middleware';
 
 import * as dotenv from 'dotenv';
+import { AuthModule } from './auth/auth.module';
 dotenv.config();
 
 @Module({
@@ -13,6 +14,7 @@ dotenv.config();
     CvsModule,
     SkillsModule,
     UsersModule,
+    AuthModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       driver: require('mysql2'),
