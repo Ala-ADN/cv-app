@@ -68,6 +68,7 @@ describe('UsersController', () => {
         id: 1,
         ...createUserDto,
         cvs: [],
+        role: 'user',
       };
 
       jest.spyOn(service, 'create').mockResolvedValue(newUser);
@@ -88,6 +89,7 @@ describe('UsersController', () => {
           email: 'user1@example.com',
           password: 'pass1',
           cvs: [],
+          role: 'user',
         },
         {
           id: 2,
@@ -95,6 +97,7 @@ describe('UsersController', () => {
           email: 'user2@example.com',
           password: 'pass2',
           cvs: [],
+          role: 'user',
         },
       ];
 
@@ -114,6 +117,7 @@ describe('UsersController', () => {
           email: 'user1@example.com',
           password: 'pass1',
           cvs: [],
+          role: 'user',
         },
         {
           id: 2,
@@ -121,6 +125,7 @@ describe('UsersController', () => {
           email: 'user2@example.com',
           password: 'pass2',
           cvs: [],
+          role: 'user',
         },
       ];
 
@@ -141,6 +146,7 @@ describe('UsersController', () => {
         email: 'test@example.com',
         password: 'password123',
         cvs: [],
+        role: 'user',
       };
 
       jest.spyOn(service, 'findOne').mockResolvedValue(user);
@@ -158,6 +164,7 @@ describe('UsersController', () => {
         email: 'test@example.com',
         password: 'password123',
         cvs: [],
+        role: 'user',
       };
 
       jest.spyOn(service, 'findOne').mockResolvedValue(user);
@@ -177,6 +184,7 @@ describe('UsersController', () => {
         email: 'test@example.com',
         password: 'password123',
         cvs: [],
+        role: 'user',
       };
 
       const cvs = [
@@ -221,12 +229,14 @@ describe('UsersController', () => {
           username: 'user1',
           email: 'user1@example.com',
           cvCount: '3',
+          role: 'user',
         },
         {
           id: 2,
           username: 'user2',
           email: 'user2@example.com',
           cvCount: '2',
+          role: 'user',
         },
       ];
 
@@ -252,6 +262,7 @@ describe('UsersController', () => {
         email: 'updated@example.com',
         password: 'password123',
         cvs: [],
+        role: 'user',
       };
 
       jest.spyOn(service, 'update').mockResolvedValue(updatedUser);

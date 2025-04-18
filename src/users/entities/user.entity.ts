@@ -13,8 +13,6 @@ export class User {
   password: string;
   @Column()
   salt: string;
-  @Column({ default: false })
-  isAdmin: boolean;
   @Column({ default: "user" })
   role:string;
   @OneToMany(() => Cv, (cv) => cv.user, { cascade: true })

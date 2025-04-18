@@ -28,8 +28,8 @@ export class AdminGuard implements CanActivate {
       if (
         typeof decoded === 'object' &&
         decoded !== null &&
-        'isAdmin' in decoded &&
-        (decoded as any).isAdmin === true
+        'role' in decoded &&
+        (decoded as any).role === 'admin'
       ) {
         request.user = decoded;
         return true;
