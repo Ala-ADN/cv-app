@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  Unique,
+} from 'typeorm';
 import { Cv } from '../../cvs/entities/cv.entity';
 
 @Entity()
@@ -12,9 +18,9 @@ export class User {
   @Column()
   password: string;
   @Column()
-  salt: string;
-  @Column({ default: "user" })
-  role:string;
+  salt?: string;
+  @Column({ default: 'user' })
+  role: string;
   @OneToMany(() => Cv, (cv) => cv.user, { cascade: true })
   cvs: Cv[];
 }
