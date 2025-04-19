@@ -25,6 +25,7 @@ describe('CvsController', () => {
     password: 'password123',
     cvs: [],
     role: 'user',
+    salt:'a'
   };
 
   beforeEach(async () => {

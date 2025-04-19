@@ -69,6 +69,7 @@ describe('UsersController', () => {
         ...createUserDto,
         cvs: [],
         role: 'user',
+        salt:'a'
       };
 
       jest.spyOn(service, 'create').mockResolvedValue(newUser);
@@ -90,6 +91,7 @@ describe('UsersController', () => {
           password: 'pass1',
           cvs: [],
           role: 'user',
+          salt:'a'
         },
         {
           id: 2,
@@ -98,6 +100,7 @@ describe('UsersController', () => {
           password: 'pass2',
           cvs: [],
           role: 'user',
+          salt:'a'
         },
       ];
 
@@ -118,6 +121,7 @@ describe('UsersController', () => {
           password: 'pass1',
           cvs: [],
           role: 'user',
+          salt:'a'
         },
         {
           id: 2,
@@ -126,6 +130,7 @@ describe('UsersController', () => {
           password: 'pass2',
           cvs: [],
           role: 'user',
+          salt:'a'
         },
       ];
 
@@ -147,6 +152,7 @@ describe('UsersController', () => {
         password: 'password123',
         cvs: [],
         role: 'user',
+        salt:'a'
       };
 
       jest.spyOn(service, 'findOne').mockResolvedValue(user);
@@ -165,6 +171,7 @@ describe('UsersController', () => {
         password: 'password123',
         cvs: [],
         role: 'user',
+        salt:'a'
       };
 
       jest.spyOn(service, 'findOne').mockResolvedValue(user);
@@ -185,6 +192,7 @@ describe('UsersController', () => {
         password: 'password123',
         cvs: [],
         role: 'user',
+        salt:'a'
       };
 
       const cvs = [
@@ -263,6 +271,7 @@ describe('UsersController', () => {
         password: 'password123',
         cvs: [],
         role: 'user',
+        salt:'a'
       };
 
       jest.spyOn(service, 'update').mockResolvedValue(updatedUser);

@@ -6,6 +6,9 @@ import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { Skill } from '../skills/entities/skill.entity';
 import { User } from '../users/entities/user.entity';
+import { SearchCvDto } from './dto/search-cv.dto';
+import { applyPagination } from '../common/pagination/pagination.helper';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class CvsService {
@@ -45,6 +48,27 @@ export class CvsService {
       });
     }
   }
+
+  async findAllWithPagination(
+    user: any,
+    relations?: string[],
+    pagination?: PaginationDto,
+  ) {
+    const defaultRelations = relations || ['skills', 'user'];
+  
+    const qb = this.cvRepository.createQueryBuilder('cv')
+      .leftJoinAndSelect('cv.skills', 'skills')
+      .leftJoinAndSelect('cv.user', 'user');
+
+    applyPagination(qb, pagination ?? new PaginationDto());
+  
+    if (!user.isAdmin) {
+      qb.andWhere('cv.user.id = :userId', { userId: user.id });
+    }
+  
+    return qb.getMany();
+  }
+  
 
   findOne(id: number, relations?: string[]) {
     return this.cvRepository.findOne({
@@ -175,4 +199,40 @@ export class CvsService {
 
     return { deleted: true };
   }
+
+  async searchCvs(user: any, filter: SearchCvDto): Promise<Cv[]> {
+    const query = this.cvRepository
+      .createQueryBuilder('cv')
+      .innerJoinAndSelect('cv.skills', 'skills')
+      .innerJoinAndSelect('cv.user', 'user');
+  
+    // Apply search criteria
+    if (filter.critere) {
+      query.where(
+        '(cv.name LIKE :critere OR cv.firstname LIKE :critere OR cv.job LIKE :critere)',
+        { critere: `%${filter.critere}%` },
+      );
+    }
+  
+    // Apply age filter (AND with existing conditions)
+    if (filter.age !== undefined) {
+      if (filter.critere) {
+        query.andWhere('cv.age = :age', { age: filter.age });
+      } else {
+        query.where('cv.age = :age', { age: filter.age });
+      }
+    }
+  
+    // Restrict to user's CVs if not admin
+    if (!user.isAdmin) {
+      if (filter.critere || filter.age !== undefined) {
+        query.andWhere('cv.user.id = :userId', { userId: user.id });
+      } else {
+        query.where('cv.user.id = :userId', { userId: user.id });
+      }
+    }
+  
+    return query.getMany();
+  }
+  
 }

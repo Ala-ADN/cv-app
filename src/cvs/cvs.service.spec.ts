@@ -26,8 +26,10 @@ describe('CvsService', () => {
     delete: jest.fn(),
     createQueryBuilder: jest.fn(() => ({
       innerJoinAndSelect: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      getMany: jest.fn(),
+      where: jest.fn().mockReturnThis(),  
+      orWhere: jest.fn().mockReturnThis(),  
+      andWhere: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([]),
     })),
   };
 
@@ -39,6 +41,15 @@ describe('CvsService', () => {
     role: 'user',
     isAdmin: false,
   };
+  const mockQueryBuilder = {
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    orWhere: jest.fn().mockReturnThis(), 
+    innerJoinAndSelect: jest.fn().mockReturnThis(),
+    getMany: jest.fn().mockResolvedValue([]),
+  };
+  
+  mockCvRepository.createQueryBuilder.mockImplementation(() => mockQueryBuilder);
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -351,4 +362,47 @@ describe('CvsService', () => {
       expect(mockCvRepository.delete).toHaveBeenCalledWith(1);
     });
   });
+  
+
+  describe('searchCvs', () => {
+    it('should filter CVs by user if not admin', async () => {
+      const filter = { critere: 'dev' };
+      const regularUser = { ...mockUser, isAdmin: false };
+    
+      await service.searchCvs(regularUser, filter);
+    
+      // Check search criteria
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        '(cv.name LIKE :critere OR cv.firstname LIKE :critere OR cv.job LIKE :critere)',
+        { critere: '%dev%' }
+      );
+    
+      // Check user restriction
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'cv.user.id = :userId',
+        { userId: regularUser.id }
+      );
+    });
+    
+    it('should not apply user filter if admin', async () => {
+      const filter = { critere: 'design' };
+      const adminUser = { ...mockUser, isAdmin: true };
+    
+      await service.searchCvs(adminUser, filter);
+    
+      // Check search criteria
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        '(cv.name LIKE :critere OR cv.firstname LIKE :critere OR cv.job LIKE :critere)',
+        { critere: '%design%' }
+      );
+    
+      // Ensure no user filter
+      expect(mockQueryBuilder.andWhere).not.toHaveBeenCalledWith(
+        'cv.user.id = :userId',
+        expect.anything()
+      );
+    });
+  });
+  
+
 });

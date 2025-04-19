@@ -17,6 +17,8 @@ import { CvsService } from './cvs.service';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { User } from '../decorators/user.decorator';
+import { SearchCvDto } from './dto/search-cv.dto';
+import { PaginationDto } from '../common/dto/pagination.dto'; 
 
 @Controller('cvs')
 export class CvsController {
@@ -65,6 +67,28 @@ export class CvsController {
       relations.length ? relations : undefined,
     );
   }
+
+  @Get()
+  async findAllWithPagination(
+    @User() user: any,
+    @Query() pagination: PaginationDto, 
+    @Query('withSkills') withSkills?: string,
+    @Query('withUser') withUser?: string,
+  ) {
+    const relations: string[] = [];
+    if (withSkills === 'true') relations.push('skills');
+    if (withUser === 'true') relations.push('user');
+
+    return this.cvsService.findAllWithPagination(
+      user,
+      relations,
+      pagination
+    );
+  }
+
+  
+
+
 
   @Get('user/:userId')
   findByUser(@Param('userId', ParseIntPipe) userId: number) {
