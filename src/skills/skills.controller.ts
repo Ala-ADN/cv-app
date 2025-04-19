@@ -8,12 +8,15 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  ClassSerializerInterceptor,
+  UseInterceptors,
 } from '@nestjs/common';
 import { SkillsService } from './skills.service';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
 
 @Controller('skills')
+@UseInterceptors(ClassSerializerInterceptor)
 export class SkillsController {
   constructor(private readonly skillsService: SkillsService) {}
 

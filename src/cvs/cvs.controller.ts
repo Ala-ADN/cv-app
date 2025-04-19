@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseIntPipe,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -20,6 +21,7 @@ import { FilterCvDto } from './dto/filter-cv.dto';
 import { User } from '../decorators/user.decorator';
 
 @Controller('cvs')
+@UseInterceptors(ClassSerializerInterceptor)
 export class CvsController {
   constructor(private readonly cvsService: CvsService) {}
 

@@ -17,7 +17,7 @@ describe('CvsController', () => {
     id: 1,
     username: 'john',
     email: 'john@example.com',
-    isAdmin: false,
+    role: 'user',
   };
 
   // Simple mock of the service
@@ -81,31 +81,52 @@ describe('CvsController', () => {
   });
 
   describe('findAll', () => {
+    const mockCvs = [
+      { id: 1, name: 'John CV', firstname: 'John', age: 30, job: 'Developer' },
+      { id: 2, name: 'Jane CV', firstname: 'Jane', age: 28, job: 'Designer' },
+    ];
+
+    const mockCvsWithRelations = [
+      {
+        id: 1,
+        name: 'John CV',
+        firstname: 'John',
+        age: 30,
+        job: 'Developer',
+        skills: [{ id: 1, name: 'JavaScript' }],
+        user: { id: 1, username: 'john' },
+      },
+    ];
+
     it('should return all CVs without filters', async () => {
-      const expectedCvs = [{ id: 1, name: 'John CV' }];
-      mockCvsService.findAll.mockResolvedValue(expectedCvs);
+      // Arrange
+      mockCvsService.findAll.mockResolvedValue(mockCvs);
+      const filterDto = new FilterCvDto();
 
-      const result = await controller.findAll(mockUser, new FilterCvDto());
+      // Act
+      const result = await controller.findAll(mockUser, filterDto);
 
+      // Assert
       expect(mockCvsService.findAll).toHaveBeenCalledWith(mockUser, []);
-      expect(result).toEqual(expectedCvs);
+      expect(result).toEqual(mockCvs);
     });
 
     it('should return all CVs with relations', async () => {
-      const expectedCvs = [{ id: 1, name: 'John CV', skills: [], user: {} }];
-      mockCvsService.findAll.mockResolvedValue(expectedCvs);
-
+      // Arrange
+      mockCvsService.findAll.mockResolvedValue(mockCvsWithRelations);
       const filterDto = new FilterCvDto();
       filterDto.withSkills = true;
       filterDto.withUser = true;
 
+      // Act
       const result = await controller.findAll(mockUser, filterDto);
 
+      // Assert
       expect(mockCvsService.findAll).toHaveBeenCalledWith(mockUser, [
         'skills',
         'user',
       ]);
-      expect(result).toEqual(expectedCvs);
+      expect(result).toEqual(mockCvsWithRelations);
     });
 
     it('should use findAllWithFilters when search parameters are provided', async () => {
