@@ -7,10 +7,12 @@ import { JwtAuthMiddleware } from './middleware/jwt-auth.middleware';
 
 import * as dotenv from 'dotenv';
 import { AuthModule } from './auth/auth.module';
+import { FilesModule } from './files/files.module';
 dotenv.config();
 
 @Module({
   imports: [
+    FilesModule,
     CvsModule,
     SkillsModule,
     UsersModule,
