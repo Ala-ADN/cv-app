@@ -37,7 +37,6 @@ describe('CvsService', () => {
     email: 'test@example.com',
     password: 'password123',
     role: 'user',
-    isAdmin: false,
   };
 
   beforeEach(async () => {
@@ -99,7 +98,7 @@ describe('CvsService', () => {
 
   describe('findAll', () => {
     it('should find all CVs (admin)', async () => {
-      const adminUser = { ...mockUser, isAdmin: true };
+      const adminUser = { ...mockUser, role: 'admin' };
       mockCvRepository.find.mockResolvedValue([{ id: 1 }]);
       const result = await service.findAll(adminUser);
       expect(result).toEqual([{ id: 1 }]);

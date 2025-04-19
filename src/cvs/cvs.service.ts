@@ -36,7 +36,7 @@ export class CvsService {
   async findAll(user: any, relations?: string[]) {
     const defaultRelations = relations || ['skills', 'user'];
 
-    if (user.isAdmin) {
+    if (user.role === 'admin') {
       return this.cvRepository.find({ relations: defaultRelations });
     } else {
       return this.cvRepository.find({
