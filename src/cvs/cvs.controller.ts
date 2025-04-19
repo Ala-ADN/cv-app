@@ -16,6 +16,7 @@ import { diskStorage } from 'multer';
 import { CvsService } from './cvs.service';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
+import { FilterCvDto } from './dto/filter-cv.dto';
 import { User } from '../decorators/user.decorator';
 
 @Controller('cvs')
@@ -23,7 +24,7 @@ export class CvsController {
   constructor(private readonly cvsService: CvsService) {}
 
   @Post()
-  create(@Body() createCvDto: CreateCvDto, @User() user) {
+  create(@Body() createCvDto: CreateCvDto, @User() user: any) {
     return this.cvsService.create(createCvDto, user);
   }
 
@@ -51,19 +52,20 @@ export class CvsController {
   }
 
   @Get()
-  findAll(
-    @User() user: any,
-    @Query('withSkills') withSkills?: string,
-    @Query('withUser') withUser?: string,
-  ) {
+  findAll(@User() user: any, @Query() filterDto: FilterCvDto) {
     const relations: string[] = [];
-    if (withSkills === 'true') relations.push('skills');
-    if (withUser === 'true') relations.push('user');
+    if (filterDto.withSkills) relations.push('skills');
+    if (filterDto.withUser) relations.push('user');
 
-    return this.cvsService.findAll(
-      user,
-      relations.length ? relations : undefined,
-    );
+    if (
+      Object.keys(filterDto).filter(
+        (key) => key !== 'withSkills' && key !== 'withUser',
+      ).length > 0
+    ) {
+      return this.cvsService.findAllWithFilters(user, filterDto, relations);
+    }
+
+    return this.cvsService.findAll(user, relations);
   }
 
   @Get('user/:userId')
@@ -77,19 +79,12 @@ export class CvsController {
   }
 
   @Get(':id')
-  findOne(
-    @Param('id') id: string,
-    @Query('withSkills') withSkills?: string,
-    @Query('withUser') withUser?: string,
-  ) {
+  findOne(@Param('id') id: string, @Query() filterDto: FilterCvDto) {
     const relations: string[] = [];
-    if (withSkills === 'true') relations.push('skills');
-    if (withUser === 'true') relations.push('user');
+    if (filterDto.withSkills) relations.push('skills');
+    if (filterDto.withUser) relations.push('user');
 
-    return this.cvsService.findOne(
-      +id,
-      relations.length ? relations : undefined,
-    );
+    return this.cvsService.findOne(+id, relations);
   }
 
   @Patch(':id')

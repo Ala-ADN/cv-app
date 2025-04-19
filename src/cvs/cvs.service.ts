@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Like, FindOptionsWhere } from 'typeorm';
 import { Cv } from './entities/cv.entity';
 import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
+import { FilterCvDto } from './dto/filter-cv.dto';
 import { Skill } from '../skills/entities/skill.entity';
 import { User } from '../users/entities/user.entity';
 
@@ -44,6 +45,61 @@ export class CvsService {
         relations: defaultRelations,
       });
     }
+  }
+
+  async findAllWithFilters(
+    user: any,
+    filterDto: FilterCvDto,
+    relations?: string[],
+  ) {
+    // Prepare relations
+    const relationsToInclude = [...(relations || [])];
+    if (filterDto.withSkills && !relationsToInclude.includes('skills')) {
+      relationsToInclude.push('skills');
+    }
+    if (filterDto.withUser && !relationsToInclude.includes('user')) {
+      relationsToInclude.push('user');
+    }
+    if (!relationsToInclude.includes('user')) {
+      relationsToInclude.push('user');
+    }
+
+    // Base where condition
+    let where: any = {};
+
+    // Apply user-based filtering
+    if (!user.isAdmin) {
+      where.user = { id: user.id };
+    }
+
+    const { searchValue, age } = filterDto;
+
+    // Apply age filter if provided
+    if (age !== undefined) {
+      where.age = age;
+    }
+
+    // For search value, we need to use multiple conditions with OR logic
+    if (searchValue) {
+      // Create an array of OR conditions
+      const searchConditions = [
+        { ...where, name: Like(`%${searchValue}%`) },
+        { ...where, firstname: Like(`%${searchValue}%`) },
+        { ...where, job: Like(`%${searchValue}%`) },
+      ];
+
+      // Use the search conditions directly
+      return this.cvRepository.find({
+        where: searchConditions,
+        relations: relationsToInclude,
+      });
+    }
+
+    // Standard query without search
+    return this.cvRepository.find({
+      where,
+      relations: relationsToInclude,
+    });
   }
 
   findOne(id: number, relations?: string[]) {
