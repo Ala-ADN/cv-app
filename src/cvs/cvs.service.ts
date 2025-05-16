@@ -6,6 +6,7 @@ import { CreateCvDto } from './dto/create-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { Skill } from '../skills/entities/skill.entity';
 import { User } from '../users/entities/user.entity';
+import { CvEventService, CvEventType } from './cv-event.service';
 
 @Injectable()
 export class CvsService {
@@ -13,6 +14,7 @@ export class CvsService {
     @InjectRepository(Cv) private cvRepository: Repository<Cv>,
     @InjectRepository(Skill) private skillRepository: Repository<Skill>,
     @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly cvEventService: CvEventService,
   ) {}
 
   async create(data: CreateCvDto, user: any) {
@@ -30,7 +32,9 @@ export class CvsService {
       cv.skills = skills;
     }
 
-    return this.cvRepository.save(cv);
+    const result = await this.cvRepository.save(cv);
+    await this.cvEventService.logEvent(CvEventType.CREATE, result, userEntity);
+    return result;
   }
 
   async findAll(user: any, relations?: string[]) {
@@ -80,27 +84,22 @@ export class CvsService {
   }
 
   async update(id: number, data: UpdateCvDto) {
-    const { skills: skillIds, userId, ...cvData } = data;
-
+    // Remove skills and userId from cvData to avoid type errors
+    const { skills, userId, ...cvData } = data as any;
     // Update basic CV properties
     const updateResult = await this.cvRepository.update(id, cvData);
-
     // Get the updated CV
     const cv = await this.findOne(id);
-
     if (!cv || updateResult.affected === 0) {
       throw new NotFoundException(`CV with ID ${id} not found`);
     }
-
     let shouldSave = false;
-
     // Update skills if provided
-    if (skillIds && skillIds.length > 0) {
-      const skills = await this.skillRepository.findBy({ id: In(skillIds) });
-      cv.skills = skills;
+    if (skills && skills.length > 0) {
+      const foundSkills = await this.skillRepository.findBy({ id: In(skills) });
+      cv.skills = foundSkills;
       shouldSave = true;
     }
-
     // Update user if provided
     if (userId !== undefined) {
       const user = userId
@@ -109,15 +108,18 @@ export class CvsService {
       if (userId && !user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
-      cv.user = user;
-      shouldSave = true;
+      if (user) {
+        cv.user = user;
+        shouldSave = true;
+      }
     }
-
     // Only save if skills or user were updated
     if (shouldSave) {
-      return this.cvRepository.save(cv);
+      const updatedCv = await this.cvRepository.save(cv);
+      await this.cvEventService.logEvent(CvEventType.UPDATE, updatedCv, cv.user!);
+      return updatedCv;
     }
-
+    await this.cvEventService.logEvent(CvEventType.UPDATE, cv, cv.user!);
     return cv;
   }
 
@@ -167,12 +169,13 @@ export class CvsService {
     if (!cv) {
       throw new NotFoundException(`CV with ID ${id} not found`);
     }
-
     const result = await this.cvRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`CV with ID ${id} not found`);
     }
-
+    if (cv.user) {
+      await this.cvEventService.logEvent(CvEventType.DELETE, cv, cv.user);
+    }
     return { deleted: true };
   }
 }
